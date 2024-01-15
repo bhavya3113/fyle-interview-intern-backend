@@ -30,7 +30,7 @@ def test_grade_assignment_draft_assignment(client, h_principal):
     assert response.status_code == 400
 
 
-def test_grade_assignment(client, h_principal):
+def test_grade_assignment(client, h_principal,sub_assign):
     response = client.post(
         '/principal/assignments/grade',
         json={

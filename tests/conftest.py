@@ -1,7 +1,8 @@
 import pytest
 import json
 from tests import app
-
+from core.models.assignments import Assignment, AssignmentStateEnum
+from core import db
 
 @pytest.fixture
 def client():
@@ -66,3 +67,36 @@ def h_principal():
     }
 
     return headers
+
+@pytest.fixture
+def sub_assign():
+    assignment = Assignment.get_by_id(4)
+    assignment.state = AssignmentStateEnum.SUBMITTED
+    assignment.grade = None
+    db.session.flush()
+
+    yield assignment
+
+    assignment.state = AssignmentStateEnum.DRAFT
+    db.session.flush()
+
+@pytest.fixture
+def draft_assign():
+    assignment = Assignment.get_by_id(2)
+    prev_state = assignment.state
+    prev_grade = assignment.grade
+    assignment.state = AssignmentStateEnum.DRAFT
+    assignment.grade = None
+    db.session.flush()
+
+    yield assignment
+
+    assignment.state = prev_state
+    assignment.grade = prev_grade
+    db.session.flush()
+
+@pytest.fixture
+def cleanup_assignment_transaction():
+    # This fixture ensures a rollback after each test that uses it
+    yield
+    db.session.rollback()

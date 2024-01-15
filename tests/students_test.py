@@ -1,3 +1,5 @@
+from core import db
+from core.models.assignments import Assignment
 def test_get_assignments_student_1(client, h_student_1):
     response = client.get(
         '/student/assignments',
@@ -38,8 +40,7 @@ def test_post_assignment_null_content(client, h_student_1):
 
     assert response.status_code == 400
 
-
-def test_post_assignment_student_1(client, h_student_1):
+def test_post_assignment_student_1(client, h_student_1,cleanup_assignment_transaction):
     content = 'ABCD TESTPOST'
 
     response = client.post(
@@ -55,9 +56,12 @@ def test_post_assignment_student_1(client, h_student_1):
     assert data['content'] == content
     assert data['state'] == 'DRAFT'
     assert data['teacher_id'] is None
+    assignment = db.session.query(Assignment).get(data['id'])
+    db.session.delete(assignment)
+    db.session.commit()
 
 
-def test_submit_assignment_student_1(client, h_student_1):
+def test_submit_assignment_student_1(client, h_student_1,draft_assign):
     response = client.post(
         '/student/assignments/submit',
         headers=h_student_1,
