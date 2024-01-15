@@ -1,5 +1,5 @@
 from core.models.assignments import AssignmentStateEnum, GradeEnum
-
+from enum import Enum
 
 def test_get_assignments(client, h_principal):
     response = client.get(
@@ -60,3 +60,23 @@ def test_regrade_assignment(client, h_principal):
 
     assert response.json['data']['state'] == AssignmentStateEnum.GRADED.value
     assert response.json['data']['grade'] == GradeEnum.B
+
+def test_list_teachers(client, h_teacher_1, cleanup_assignment_transaction):
+
+    # Perform a request to the '/teacher' endpoint
+    response = client.get(
+        '/principal/teacher',
+        headers= h_teacher_1
+    )
+
+    assert response.status_code == 403
+    assert response.json['error'] == 'FyleError'
+    
+def test_list_teachers_student(client, h_student_1):
+    response = client.get(
+        '/principal/teachers',
+        headers=h_student_1
+    )
+
+    assert response.status_code == 404
+    assert response.json['error'] == 'NotFound'
